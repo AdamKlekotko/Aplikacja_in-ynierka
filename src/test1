@@ -1,0 +1,121 @@
+# -*- coding: utf-8 -*-
+"""
+Spyder Edito
+
+
+This is a temporary script file.
+"""
+import serial
+import string
+import matplotlib.pyplot as plt
+from time import sleep
+import numpy as np
+
+psc1 = 0
+psc2 = 0
+# y=[]
+y = np.zeros((32, 20))
+
+sine = [2047, 2447, 2831, 3185, 3498, 3750, 3939, 4056, 4095, 4056,
+        3939, 3750, 3495, 3185, 2831, 2447, 2047, 1647, 1263, 909,
+        599, 344, 155, 38, 0, 38, 155, 344, 599, 909, 1263, 1647]
+measure_list = [625, 1000, 2000, 5000, 10000, 20000, 40000, 50000, 100000]
+# serial_port=serial.Serial()
+# serial_port.baudrate=9600
+# serial_port.port='COM5'
+# serial_port.parity='N'
+# serial_port.bytesize=8
+# serial_port.stopbits=1
+# serial_port.open()
+
+
+
+
+
+
+for j in measure_list:
+    #    freq = j
+    #    psc=200000/j
+    #    serial_port.write(b"c")
+    #    psc2=int(psc/256)
+    #    sleep(1)
+    #    psc1=int(psc-psc2*256)
+    #    sleep(1)
+    #    serial_port.write(int.to_bytes(psc1,1,byteorder='little'))
+    #    sleep(1)
+    #    serial_port.write(int.to_bytes(psc2,1,byteorder='little'))
+    #    sleep(1)
+    #    var3=serial_port.read(2)
+    #    var32=int.from_bytes(var3, byteorder='little')
+    #    bity3="{0:012b}".format(var32)
+    #    print(bity3)
+    #    sleep(1)
+
+    for k in range(y.shape[1]):
+        print("try to create port")
+        serial_port = serial.Serial()
+        serial_port.baudrate = 9600
+        serial_port.port = 'COM5'
+        serial_port.parity = 'N'
+        serial_port.bytesize = 8
+        serial_port.stopbits = 1
+        serial_port.timeout = 1000
+        while (serial_port.is_open == False):
+            serial_port.open()
+            print("port is open")
+        freq = j
+        psc = 200000 / j
+        serial_port.write(b"c")
+        psc2 = int(psc / 256)
+        psc1 = int(psc - psc2 * 256)
+        print("write c")
+        sleep(1)
+        serial_port.write(int.to_bytes(psc1, 1, byteorder='little'))
+        print("psc1")
+        sleep(1)
+        serial_port.write(int.to_bytes(psc2, 1, byteorder='little'))
+        print('psc2')
+        sleep(1)
+        var3 = serial_port.read(2)
+        print('read psc')
+        var32 = int.from_bytes(var3, byteorder='little')
+        bity3 = "{0:012b}".format(var32)
+        print(bity3)
+        sleep(1)
+
+        print('pomiar %i' % k)
+        sleep(0.001)
+        serial_port.write(b"a")
+        sleep(0.001)
+        for i in range(y.shape[0]):
+            print("punkt 1")
+            var1 = serial_port.read(2)
+            print("punkt 2")
+            var2 = int.from_bytes(var1, byteorder='little')
+            #            bity="{0:012b}".format(var2)
+            print(var2)
+            y[i, k] = np.copy(var2)
+            sleep(0.01)
+        while (serial_port.is_open == True):
+            serial_port.close()
+            print("close loop")
+        sleep(1)
+    plt.plot(np.mean(y, 1), label='ADC Measure')
+    plt.plot(sine, label='Generated Sinus Signal')
+    plt.xlabel('clock count')
+    plt.ylabel('12 Bit Value')
+    plt.legend(bbox_to_anchor=(0.52, 0.97), loc=2, borderaxespad=0.)
+    plt.savefig('figure%1.f.png' % freq, bbox_inches='tight')
+    sleep(2)
+    plt.show()
+
+
+# serial_port.close()
+
+
+
+
+
+
+
+
